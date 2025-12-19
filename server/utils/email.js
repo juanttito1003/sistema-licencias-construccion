@@ -2,28 +2,21 @@ const nodemailer = require('nodemailer');
 
 // Configurar transporter
 const crearTransporter = () => {
-  if (process.env.NODE_ENV === 'production') {
-    // Configuración para producción (usar servicio real)
-    return nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
-      secure: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-      }
-    });
-  } else {
-    // Para desarrollo: mostrar en consola
-    return nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      auth: {
-        user: process.env.EMAIL_USER || 'ethereal.user@ethereal.email',
-        pass: process.env.EMAIL_PASSWORD || 'ethereal.pass'
-      }
-    });
-  }
+  const port = parseInt(process.env.EMAIL_PORT) || 465;
+  
+  // Usar Gmail tanto en desarrollo como producción
+  return nodemailer.createTransport({
+    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+    port: port,
+    secure: port === 465, // true para port 465, false para otros puertos
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD
+    },
+    tls: {
+      rejectUnauthorized: false
+    }
+  });
 };
 
 const enviarEmailVerificacion = async (usuario, token) => {
@@ -107,6 +100,20 @@ const generarCodigoNumerico = () => {
 
 // Enviar código para cambio de contraseña
 const enviarCodigoCambioContrasena = async (usuario, codigo) => {
+  // En desarrollo, solo mostrar el código en consola sin intentar enviar email
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('\n📧 ========================================');
+    console.log('📧 CÓDIGO CAMBIO DE CONTRASEÑA (DESARROLLO)');
+    console.log('📧 ========================================');
+    console.log('📧 Usuario:', usuario.email);
+    console.log('📧 Nombres:', usuario.nombres);
+    console.log('📧 CÓDIGO:', codigo);
+    console.log('📧 ========================================\n');
+    
+    // Devolver éxito sin intentar enviar el email
+    return { success: true, info: { messageId: 'dev-mode' } };
+  }
+
   const transporter = crearTransporter();
   
   const mailOptions = {
@@ -159,23 +166,32 @@ const enviarCodigoCambioContrasena = async (usuario, codigo) => {
   };
 
   try {
+    // Enviar email real (solo en producción)
     const info = await transporter.sendMail(mailOptions);
-    
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('\n📧 Código de cambio de contraseña enviado (desarrollo):');
-      console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
-      console.log('Código:', codigo);
-    }
-    
+    console.log('✅ Email enviado exitosamente a:', usuario.email);
     return { success: true, info };
   } catch (error) {
-    console.error('Error al enviar email:', error);
+    console.error('❌ Error al enviar email:', error.message);
     return { success: false, error: error.message };
   }
 };
 
 // Enviar código para registro de usuario
 const enviarCodigoRegistro = async (email, nombres, codigo) => {
+  // En desarrollo, solo mostrar el código en consola sin intentar enviar email
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('\n📧 ========================================');
+    console.log('📧 CÓDIGO DE REGISTRO (DESARROLLO)');
+    console.log('📧 ========================================');
+    console.log('📧 Para:', email);
+    console.log('📧 Nombres:', nombres);
+    console.log('📧 CÓDIGO:', codigo);
+    console.log('📧 ========================================\n');
+    
+    // Devolver éxito sin intentar enviar el email
+    return { success: true, info: { messageId: 'dev-mode' } };
+  }
+
   const transporter = crearTransporter();
   
   const mailOptions = {
@@ -226,17 +242,12 @@ const enviarCodigoRegistro = async (email, nombres, codigo) => {
   };
 
   try {
+    // Enviar email real (solo en producción)
     const info = await transporter.sendMail(mailOptions);
-    
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('\n📧 Código de registro enviado (desarrollo):');
-      console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
-      console.log('Código:', codigo);
-    }
-    
+    console.log('✅ Email enviado exitosamente a:', email);
     return { success: true, info };
   } catch (error) {
-    console.error('Error al enviar email:', error);
+    console.error('❌ Error al enviar email:', error.message);
     return { success: false, error: error.message };
   }
 };

@@ -164,7 +164,10 @@ const NuevoExpediente = () => {
           areaTerreno: parseFloat(formData.areaTerreno) || 0,
           areaConstruccion: parseFloat(formData.areaConstruccion) || 0,
           numeroNiveles: parseInt(formData.numeroNiveles) || 1,
-          usoProyecto: formData.usoProyecto
+          usoProyecto: formData.usoProyecto,
+          tipoObra: formData.tipoObra,
+          esPropietario: formData.esPropietario,
+          esPersonaJuridica: formData.esPersonaJuridica
         }
       };
 

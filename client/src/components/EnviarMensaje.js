@@ -10,7 +10,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { FaEnvelope, FaTimes, FaFileAlt, FaSpinner } from 'react-icons/fa';
 import api from '../services/api';
-import './Pages.css';
+import '../pages/Pages.css';
 
 const EnviarMensaje = ({ expediente, onClose, onEnviado }) => {
   const [cargando, setCargando] = useState(false);
